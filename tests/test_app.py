@@ -42,8 +42,7 @@ def test_get_balance(client):
     move = client.post('/money', json=dict(
         name=account_name,
         amount=50
-    ),
-    headers={'Content-Type': 'application/json'})
+    ))
     after = client.get(f'/accounts/{account_name}')
 
     assert create.status_code == 200
@@ -56,3 +55,24 @@ def test_get_balance(client):
 
     assert balance_before == 0
     assert balance_after == 50
+
+
+def test_move_funds(client):
+    client.post('/accounts/SendsMoney')
+    client.post('/accounts/ReceivesMoney')
+    move = client.post('/money/move', json=dict(
+        name_from='SendsMoney',
+        name_to='ReceivesMoney',
+        amount=20
+    ))
+
+    assert move.status_code == 200
+
+    sender_response = client.get('/accounts/SendsMoney')
+    receiver_response = client.get('/accounts/ReceivesMoney')
+
+    sender_balance = json.loads(sender_response.data)['balance']
+    receiver_balance = json.loads(receiver_response.data)['balance']
+
+    assert sender_balance == -20
+    assert receiver_balance == 20

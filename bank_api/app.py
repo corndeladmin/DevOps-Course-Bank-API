@@ -6,7 +6,7 @@ from bank_api.bank_reporter import BankReporter
 
 
 def create_app():
-# Set up framework and service classes
+    # Set up framework and service classes
     app = Flask(__name__)
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
     api = Api(app, title='My Banking API',
@@ -17,6 +17,12 @@ def create_app():
     # Custom API documentation
     add_money = api.model("Add", {
         'name': fields.String,
+        'amount': fields.Integer
+    })
+
+    move_money = api.model("Move", {
+        'name_from': fields.String,
+        'name_to': fields.String,
         'amount': fields.Integer
     })
 
@@ -41,7 +47,7 @@ def create_app():
 
 
     @api.route('/money')
-    class MoneyResource(Resource):
+    class AddMoneyResource(Resource):
         @api.expect(add_money)
         def post(self):
             """Add funds to an account"""
@@ -51,4 +57,20 @@ def create_app():
             args = parser.parse_args()
             return bank.add_funds(**args)
 
+
+    @api.route('/money/move')
+    class MoveMoneyResource(Resource):
+        @api.expect(move_money)
+        def post(self):
+            """Move funds between accounts"""
+            parser = reqparse.RequestParser()
+            parser.add_argument('name_from', type=str, help='Account name (from)')
+            parser.add_argument('name_to', type=str, help='Account name (to)')
+            parser.add_argument('amount', type=int, help='Transfer amount (pence)')
+            args = parser.parse_args()
+            return bank.move_funds(**args)
+
     return app
+
+if __name__ == '__main__':
+    create_app().run(debug=True)

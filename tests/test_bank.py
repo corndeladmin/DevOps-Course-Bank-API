@@ -66,3 +66,41 @@ def test_add_fractional_funds(amount):
     bank.create_account('Test')
     with pytest.raises(TypeError):
         bank.add_funds('Test', amount)
+
+
+def test_move_funds(bank):
+    bank.create_account('A')
+    bank.create_account('B')
+    bank.move_funds('A', 'B', 25)
+
+    assert len(bank.transactions) == 2
+
+    for t in bank.transactions:
+        if t.account.name == 'A':
+            assert t.amount == -25
+        if t.account.name == 'B':
+            assert t.amount == 25
+
+    transaction0, transaction1 = bank.transactions
+    assert transaction0.date == transaction1.date
+
+
+def test_move_funds_to_non_account(bank):
+    bank.create_account('A')
+    with pytest.raises(ValueError):
+        bank.move_funds('A', 'DoesntExist', 25)
+
+
+def test_move_funds_from_non_account(bank):
+    bank.create_account('A')
+    with pytest.raises(ValueError):
+        bank.move_funds('DoesntExist', 'A', 25)
+
+
+@given(amount=floats())
+def test_add_fractional_funds(amount):
+    bank = Bank()
+    bank.create_account('A')
+    bank.create_account('B')
+    with pytest.raises(TypeError):
+        bank.move_funds('A', 'B', amount)

@@ -59,3 +59,15 @@ class Bank:
         account = self.get_account(name)
         now = datetime.now()
         self.transactions.append(Transaction(account, now, amount))
+
+    def move_funds(self, name_from: str, name_to: str, amount: int) -> None:
+        if not isinstance(amount, int):
+            raise TypeError('Amount must be an integer.')
+        account_from = self.get_account(name_from)
+        account_to = self.get_account(name_to)
+
+        now = datetime.now()
+
+        self.transactions.append(Transaction(account_from, now, -1 * amount))
+        self.transactions.append(Transaction(account_to, now, amount))
+
