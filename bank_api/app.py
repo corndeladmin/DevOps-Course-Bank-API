@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restx import Api, Resource, reqparse, fields, abort
 
 from bank_api.bank import Bank
+from bank_api.bank_reporter import BankReporter
 
 
 def create_app():
@@ -11,6 +12,7 @@ def create_app():
     api = Api(app, title='My Banking API',
             description='A simple banking API for learning Test-Driven-Development')
     bank = Bank()
+    bank_reporter = BankReporter(bank)
 
     # Custom API documentation
     add_money = api.model("Add", {
@@ -31,7 +33,9 @@ def create_app():
         def get(self, name):
             """Get an Account"""
             try:
-                return bank.get_account(name).to_dict()
+                account = bank.get_account(name).to_dict()
+                account['balance'] = bank_reporter.get_balance(account['name'])
+                return account
             except Exception:
                 abort(404, 'Account not found')
 

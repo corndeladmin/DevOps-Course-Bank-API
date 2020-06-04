@@ -12,6 +12,15 @@ class Account:
             "name": self.name
         }
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, Account):
+            return self.name == other.name
+
+        return False
+    
+    def __hash__(self) -> int:
+        return self.name.__hash__()
+
 class Transaction:
     account: Account
     date: datetime
