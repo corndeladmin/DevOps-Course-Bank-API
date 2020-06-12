@@ -7,4 +7,4 @@ class BankReporter:
 
     def get_balance(self, name) -> int:
         account = self._bank.get_account(name)
-        return sum(t.amount for t in self._bank.transactions if t.account == account)
+        return sum(t.amount for t in self._bank._transactions if t.account == account)

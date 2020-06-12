@@ -17,14 +17,14 @@ def test_create_account_raises_error_if_name_blank(bank: Bank):
         bank.create_account('')
 
 def test_bank_creates_empty(bank: Bank):
-    assert len(bank.accounts) == 0
-    assert len(bank.transactions) == 0
+    assert len(bank._accounts) == 0
+    assert len(bank._transactions) == 0
 
 def test_can_create_and_get_account(bank: Bank):
     bank.create_account('Test')
     account = bank.get_account('Test')
 
-    assert len(bank.accounts) == 1
+    assert len(bank._accounts) == 1
     assert account.name == 'Test'
 
 def test_get_account_raises_error_if_no_account_matches(bank: Bank):
@@ -39,7 +39,7 @@ def test_add_funds(amount):
     bank = Bank()
     bank.create_account('Test')
     bank.add_funds('Test', amount)
-    transactions = bank.transactions
+    transactions = bank._transactions
 
     assert len(transactions) == 1
     assert transactions.pop().amount == amount
@@ -55,7 +55,7 @@ def test_add_multiple_funds(bank):
     bank.add_funds('Test', 50)
     bank.add_funds('Test', 25)
 
-    transactions = bank.transactions
+    transactions = bank._transactions
     assert len(transactions) == 2
     assert {t.amount for t in transactions} == {25, 50}
 
@@ -74,12 +74,12 @@ def test_move_funds(bank):
     bank.create_account('B')
     bank.move_funds('A', 'B', 25)
 
-    assert len(bank.transactions) == 3
-    assert {100, -25} == {t.amount for t in bank.transactions if t.account.name == 'A'}
-    assert {25} == {t.amount for t in bank.transactions if t.account.name == 'B'}
+    assert len(bank._transactions) == 3
+    assert {100, -25} == {t.amount for t in bank._transactions if t.account.name == 'A'}
+    assert {25} == {t.amount for t in bank._transactions if t.account.name == 'B'}
 
     # Check there the timestamps aren't unique
-    assert len({t.date for t in bank.transactions}) < 3
+    assert len({t.date for t in bank._transactions}) < 3
 
 
 def test_move_funds_to_non_account(bank):

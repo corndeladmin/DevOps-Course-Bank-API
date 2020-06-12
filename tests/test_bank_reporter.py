@@ -18,7 +18,7 @@ def mocked_bank(monkeypatch):
 
 
 def test_get_balance_no_transactions(mocked_bank, monkeypatch):
-    monkeypatch.setattr(mocked_bank, 'transactions', {})
+    monkeypatch.setattr(mocked_bank, '_transactions', {})
 
     bank_reporter = BankReporter(mocked_bank)
     balance = bank_reporter.get_balance('mock')
@@ -27,7 +27,7 @@ def test_get_balance_no_transactions(mocked_bank, monkeypatch):
 
 def test_get_balance(mocked_bank, monkeypatch):
 
-    monkeypatch.setattr(mocked_bank, 'transactions', {
+    monkeypatch.setattr(mocked_bank, '_transactions', {
         Transaction(Account('mock'), datetime.now(), 25),
         Transaction(Account('mock'), datetime.now(), 50),
         Transaction(Account('other'), datetime.now(), 100)

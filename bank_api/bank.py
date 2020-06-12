@@ -1,44 +1,50 @@
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Set, List
+from typing import Set
 
+@dataclass(frozen=True)
 class Account:
     name: str
 
-    def __init__(self, name: str):
-        self.name = name
+    def to_dict(self) -> dict:
+        return { 'name': self.name }
 
-    def to_dict(self) -> dict: 
-        return {
-            "name": self.name
-        }
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, Account):
-            return self.name == other.name
-
-        return False
-    
-    def __hash__(self) -> int:
-        return self.name.__hash__()
-
+@dataclass(frozen=True)
 class Transaction:
     account: Account
     date: datetime
     amount: int
-    
-    def __init__(self, account: Account, date: datetime, amount: int):
-        self.account = account
-        self.date = date
-        self.amount = amount
 
 class OverdrawnError(ValueError):
     pass
 
 
+class TransactionSet(set):
+    def add(self, new: Transaction):
+        """Override parent add method to include balance check"""
+        if (
+                new.amount < 0 and
+                new.amount + sum(t.amount for t in self if t.account == new.account) < 0
+        ):
+            raise OverdrawnError
+        else:
+            return super().add(new)
+
+
 class Bank:
     def __init__(self):
-        self.accounts: Set[Account] = set()
-        self.transactions: List[Transaction] = []
+        self._accounts: Set[Account] = set()
+        self._transactions: TransactionSet[Transaction] = TransactionSet()
+
+    @property
+    def accounts(self) -> Set[Account]:
+        """Get a copy of the bank's accounts"""
+        return self._accounts.copy()
+
+    @property
+    def transactions(self) -> Set[Transaction]:
+        """Get a copy of the bank's transactions"""
+        return self._transactions.copy()
 
     def create_account(self, name: str) -> Account:
         """Creates a new account with the name provided"""
@@ -46,12 +52,12 @@ class Bank:
             raise ValueError("Account name cannot be None or empty")
 
         account = Account(name)
-        self.accounts.add(account)
+        self._accounts.add(account)
         return account
 
     def get_account(self, name: str) -> Account:
         """Gets the named account, if it exists"""
-        for account in self.accounts:
+        for account in self._accounts:
             if account.name == name:
                 return account
         raise ValueError('Account not found')
@@ -62,10 +68,8 @@ class Bank:
             raise TypeError('Amount must be an integer.')
         account = self.get_account(name)
 
-        self._validate_movement(account, amount)
-
         now = datetime.now()
-        self.transactions.append(Transaction(account, now, amount))
+        self._transactions.add(Transaction(account, now, amount))
 
     def move_funds(self, name_from: str, name_to: str, amount: int) -> None:
         if not isinstance(amount, int):
@@ -76,13 +80,5 @@ class Bank:
 
         now = datetime.now()
 
-        self._validate_movement(account_from, -1 * amount)
-        self._validate_movement(account_to, amount)
-
-        self.transactions.append(Transaction(account_from, now, -1 * amount))
-        self.transactions.append(Transaction(account_to, now, amount))
-
-    def _validate_movement(self, account: Account, change: int):
-        current_balance = sum(t.amount for t in self.transactions if t.account == account)
-        if current_balance + change < 0:
-            raise OverdrawnError()
+        self._transactions.add(Transaction(account_from, now, -1 * amount))
+        self._transactions.add(Transaction(account_to, now, amount))
