@@ -98,9 +98,24 @@ def test_move_funds_from_non_account(bank):
 
 
 @given(amount=floats())
-def test_add_fractional_funds(amount):
+def test_move_fractional_funds(amount):
     bank = Bank()
     bank.create_account('A')
     bank.create_account('B')
     with pytest.raises(TypeError):
         bank.move_funds('A', 'B', amount)
+
+
+def test_account_cant_go_overdrawn_via_withdrawal(bank):
+    bank.create_account('Test')
+    bank.add_funds('Test', 5)
+    with pytest.raises(OverdrawnError):
+        bank.add_funds('Test', -10)
+
+
+def test_account_cant_go_overdrawn_via_transfer(bank):
+    bank.create_account('A')
+    bank.create_account('B')
+    bank.add_funds('A', 5)
+    with pytest.raises(OverdrawnError):
+        bank.move_funds('A', 'B', 10)
