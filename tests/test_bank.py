@@ -4,7 +4,7 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import integers, floats
 
-from bank_api.bank import Bank
+from bank_api.bank import Bank, Account, OverdrawnError
 
 
 @pytest.fixture

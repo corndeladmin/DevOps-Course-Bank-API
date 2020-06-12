@@ -31,6 +31,10 @@ class Transaction:
         self.date = date
         self.amount = amount
 
+class OverdrawnError(ValueError):
+    pass
+
+
 class Bank:
     def __init__(self):
         self.accounts: Set[Account] = set()
