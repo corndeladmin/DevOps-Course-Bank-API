@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api, Resource, reqparse, fields, abort
 
-from bank_api.bank import Bank
+from bank_api.bank import Bank, OverdrawnError
 from bank_api.bank_reporter import BankReporter
 
 
@@ -55,7 +55,10 @@ def create_app():
             parser.add_argument('name', type=str, help='Account name')
             parser.add_argument('amount', type=int, help='Transfer amount (pence)')
             args = parser.parse_args()
-            return bank.add_funds(**args)
+            try:
+                return bank.add_funds(**args)
+            except OverdrawnError:
+                abort(403)
 
 
     @api.route('/money/move')
@@ -68,7 +71,10 @@ def create_app():
             parser.add_argument('name_to', type=str, help='Account name (to)')
             parser.add_argument('amount', type=int, help='Transfer amount (pence)')
             args = parser.parse_args()
-            return bank.move_funds(**args)
+            try:
+                return bank.move_funds(**args)
+            except OverdrawnError:
+                abort(403)
 
     return app
 

@@ -80,3 +80,25 @@ def test_move_funds(client):
 
     assert sender_balance == 30
     assert receiver_balance == 20
+
+
+def test_overdrawn(client):
+    client.post('/accounts/GoingOverdrawn')
+    response = client.post('/money', json=dict(
+        name='GoingOverdrawn',
+        amount=-10
+    ))
+
+    assert response.status_code == 403
+
+
+def test_overdrawn_movement(client):
+    client.post('/accounts/OverdrawnSender')
+    client.post('/accounts/ReceivesMoney')
+    response = client.post('/money/move', json=dict(
+        name_from='OverdrawnSender',
+        name_to='ReceivesMoney',
+        amount=20
+    ))
+
+    assert response.status_code == 403
