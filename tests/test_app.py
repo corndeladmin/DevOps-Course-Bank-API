@@ -60,6 +60,10 @@ def test_get_balance(client):
 def test_move_funds(client):
     client.post('/accounts/SendsMoney')
     client.post('/accounts/ReceivesMoney')
+    client.post('/money', json={
+        'name': 'SendsMoney',
+        'amount': 50
+    })
     move = client.post('/money/move', json=dict(
         name_from='SendsMoney',
         name_to='ReceivesMoney',
@@ -74,5 +78,5 @@ def test_move_funds(client):
     sender_balance = json.loads(sender_response.data)['balance']
     receiver_balance = json.loads(receiver_response.data)['balance']
 
-    assert sender_balance == -20
+    assert sender_balance == 30
     assert receiver_balance == 20
