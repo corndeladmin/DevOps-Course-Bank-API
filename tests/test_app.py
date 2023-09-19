@@ -20,4 +20,18 @@ def test_account_creation(client: FlaskClient):
     # response = client.get('/example/route')
     # Or use client.post to make a POST request
     # https://flask.palletsprojects.com/en/1.1.x/testing/
-    pass
+    post_response = client.post("/accounts/IntegrationTest1")
+    created_name = post_response.json["name"]
+
+    assert post_response.status_code == 200
+    assert created_name == "IntegrationTest1"
+
+    get_response = client.get("/accounts/IntegrationTest1")
+    assert get_response.status_code == 200
+    assert get_response.json["name"] == "IntegrationTest1"
+
+def test_add_money(client: FlaskClient):
+    post_response = client.post("/accounts/IntegrationTest1")
+
+    add_money_response = client.post("/money", data={'name': 'IntegrationTest1', 'amount': 100})    
+    assert add_money_response.status_code == 200
