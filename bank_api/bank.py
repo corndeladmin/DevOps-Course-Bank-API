@@ -45,6 +45,10 @@ class Bank:
 
     def add_funds(self, name: str, amount: int) -> None:
         """Add funds to the named account"""
-        account = self.get_account(name)
-        now = datetime.now()
-        self.transactions.append(Transaction(account, now, amount))
+
+        # check if amount is a non negative int
+        # greater than zero before adding funds
+        if isinstance(amount, int) and amount > 0:
+            account = self.get_account(name)
+            now = datetime.now()
+            self.transactions.append(Transaction(account, now, amount))        
